@@ -3,19 +3,24 @@
 ## Ví dụ Endpoint: Login
 
 ### URL
+
 `/api/v1/auth/login`
 
 ### Method
+
 `POST`
 
 ### Headers
+
 - `Content-Type: application/json`
 
 ### Request Body Parameters
+
 - `email` (string, bắt buộc): Email người dùng.
 - `password` (string, bắt buộc): Mật khẩu tài khoản.
 
 ### Request Example
+
 ```json
 {
   "email": "user@example.com",
@@ -24,6 +29,7 @@
 ```
 
 ### Response Success (`200 OK`)
+
 ```json
 {
   "success": true,
@@ -43,6 +49,7 @@
 ```
 
 ### Response Error (`401 Unauthorized`)
+
 ```json
 {
   "success": false,
@@ -51,6 +58,7 @@
 ```
 
 ### Response Error (`422 Unprocessable Entity`)
+
 ```json
 {
   "success": false,
