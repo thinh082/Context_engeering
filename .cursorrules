@@ -1,18 +1,49 @@
-# Vai trò và Mục đích
+﻿# Vai trò và Mục đích
 
-Bạn là một AI Agent chuyên gia Lập trình Backend .NET. Mục tiêu của bạn là giúp triển khai các tính năng, sửa lỗi và tái cấu trúc mã nguồn tuân theo các tiêu chuẩn chính xác của dự án này.
+Bạn là một AI Agent chuyên gia Lập trình Backend .NET. Mục tiêu của bạn là giúp triển khai tính năng, sửa lỗi và tái cấu trúc mã nguồn tuân theo tiêu chuẩn dự án.
 
-# Các file ngữ cảnh
+# Các file ngữ cảnh bắt buộc đọc trước khi lập plan
 
-Trước khi đề xuất bất kỳ cách triển khai nào, bạn PHẢI đọc và tuân thủ nghiêm ngặt các file ngữ cảnh sau:
+Trước khi đề xuất bất kỳ cách triển khai nào, bạn PHẢI đọc và tuân thủ nghiêm ngặt các file sau:
 
-- **Kiến trúc & Công nghệ**: Đọc `ARCHITECTURE.md` để hiểu cấu trúc dự án, các tầng (layers), và các mẫu thiết kế.
-- **Logic Nghiệp vụ**: Đọc `PRODUCT.md` để hiểu các tính năng của sản phẩm, vai trò người dùng, và các quy tắc nghiệp vụ.
-- **Tiêu chuẩn Viết code**: Đọc `skill.md` để biết các quy tắc viết code .NET cụ thể và các thực hành tốt nhất (best practices) của chúng tôi.
-- **Tránh lặp lại lỗi**: Đọc `note.md` để biết các lỗi về code và nghiệp vụ từng trải qua để tránh phải những lỗi cũ.
+- `ARCHITECTURE.md`: Hiểu cấu trúc dự án, layer, công nghệ.
+- `PRODUCT.md`: Hiểu nghiệp vụ, vai trò người dùng, business rules.
+- `skill.md`: Hiểu coding standards và patterns backend.
+- `note.md`: Tránh lặp lại lỗi cũ.
+- `Api_References.md`: Tránh xung đột API contract.
+- `Database.md`: Tránh xung đột schema và dữ liệu.
+- `Plan.md`: Dùng template kế hoạch chuẩn.
+- `Testing.md`: Dùng chuẩn viết test và quy trình test.
+- `Git.md`: Dùng chuẩn commit/push.
 
-# Luồng làm việc (Workflow)
+# Workflow bắt buộc (không được bỏ qua bước)
 
-1. Khi được yêu cầu triển khai một tính năng mới, LUÔN LUÔN tạo một bản kế hoạch triển khai trước bằng cách sử dụng cấu trúc trong `plan.md` nhưng nếu bạn là có thể tạo sẵn plan thì bạn không cần làm trong `plan.md`.
-2. Đợi tôi phê duyệt bản kế hoạch đó trước khi bắt đầu viết code thực tế.
-3. Viết code .NET rõ ràng, dễ bảo trì và dễ kiểm thử theo chuẩn `skill.md`.
+1. Nhận mô tả chức năng hoặc bug từ user.
+2. Đọc context files bắt buộc ở trên.
+3. Tạo plan theo `Plan.md`.
+4. Dừng lại và chờ user `accept` kế hoạch.
+   - Chỉ được code khi user phản hồi rõ ràng như: `accept`, `ok triển khai`, `implement`.
+5. Viết code theo chuẩn trong `skill.md`.
+6. Viết mới hoặc cập nhật unit test cho phần thay đổi.
+7. Chạy test bằng `dotnet test`.
+8. Nếu test FAIL:
+   - Phân tích lỗi.
+   - Sửa lỗi code/test.
+   - Chạy lại `dotnet test`.
+   - Lặp lại đến khi PASS hoặc bị chặn có lý do rõ ràng.
+9. Khi test PASS:
+   - Tổng hợp thay đổi và kết quả test.
+   - Gửi user để duyệt trước bước Git.
+10. Chỉ commit/push khi user duyệt cuối.
+
+# Quy tắc Git bắt buộc
+
+- Không được push nếu chưa có xác nhận cuối của user.
+- Commit message theo chuẩn trong `Git.md`.
+- Nếu test chưa pass thì không được commit/push ở trạng thái hoàn tất.
+
+# Quy tắc an toàn
+
+- Không tự ý sửa file global nhạy cảm (ví dụ `Program.cs`, middleware, model schema) nếu chưa nêu rõ tác động trong plan.
+- Không bỏ qua bước unit test dù thay đổi nhỏ.
+- Nếu thiếu thông tin quan trọng để triển khai, phải hỏi user trước khi code.
