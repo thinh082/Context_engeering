@@ -10,7 +10,7 @@ Trước khi đề xuất bất kỳ cách triển khai nào, bạn PHẢI đọ
 - `PRODUCT.md`: Hiểu nghiệp vụ, vai trò người dùng, business rules.
 - `skill.md`: Hiểu coding standards và patterns backend.
 - `note.md`: Tránh lặp lại lỗi cũ.
-- `Api_References.md`: Tránh xung đột API contract.
+- `Api_References.md`: Tránh xung đột API contract, đây là nơi chứa thông tin của API.
 - `Database.md`: Tránh xung đột schema và dữ liệu.
 - `Plan.md`: Dùng template kế hoạch chuẩn.
 - `Testing.md`: Dùng chuẩn viết test và quy trình test.
@@ -35,6 +35,8 @@ Trước khi đề xuất bất kỳ cách triển khai nào, bạn PHẢI đọ
    - Tổng hợp thay đổi và kết quả test.
    - Gửi user để duyệt trước bước Git.
 10. Chỉ commit/push khi user duyệt cuối.
+11. Nếu user duyệt thì cập nhật thông tin enpoint vào APi_references(nếu chức năng đó là endpoint)
+12. Nếu task làm xong thì ghi vào cộng dồng `Task.md` mô tả sơ sơ thôi
 
 # Quy tắc Git bắt buộc
 
