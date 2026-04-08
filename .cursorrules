@@ -15,6 +15,7 @@ Trước khi đề xuất bất kỳ cách triển khai nào, bạn PHẢI đọ
 - `Plan.md`: Dùng template kế hoạch chuẩn.
 - `Testing.md`: Dùng chuẩn viết test và quy trình test.
 - `Git.md`: Dùng chuẩn commit/push.
+- `Task.md` : Ghi task đã hoàn thành
 
 # Workflow bắt buộc (không được bỏ qua bước)
 

@@ -1,112 +1,219 @@
 ﻿---
 name: aspnet-backend
-description: Xây dựng và chỉnh sửa backend ASP.NET Core Web API theo đúng quy ước dự án, bắt buộc đi theo flow Plan -> Accept -> Code -> Unit Test -> Test -> Git.
+description: Xây dựng chức năng backend cho dự án ASP.NET Core Web API theo đúng quy ước dự án. Kích hoạt skill này khi người dùng yêu cầu tạo mới hoặc chỉnh sửa Controller, Service, API endpoint, xử lý nghiệp vụ, validation, transaction, hoặc bất kỳ tác vụ backend nào trong dự án ASP.NET Core. Bắt buộc dùng khi nhắc đến các từ khóa: "tạo API", "viết service", "thêm endpoint", "xử lý nghiệp vụ", "LINQ", "Entity Framework".
 ---
 
 # ASP.NET Core Backend Skill
 
-Skill này hướng dẫn AI Agent triển khai backend ASP.NET Core Web API đúng chuẩn dự án, nhất quán từ kế hoạch, code, test đến commit/push.
+Skill này hướng dẫn Claude tạo ra mã nguồn backend ASP.NET Core Web API **đúng chuẩn dự án**, nhất quán từ cấu trúc file đến cách xử lý lỗi.
 
-> Nguyên tắc ngôn ngữ: phân tích/kế hoạch/báo cáo dùng Tiếng Việt. Tên class/method/biến dùng tiếng Anh.
+> **Nguyên tắc vàng**: Mọi phân tích, giải thích, kế hoạch đều viết bằng **Tiếng Việt**. Mã nguồn (tên class, method, biến) dùng tiếng Anh. Comment trong code dùng **Tiếng Việt**.
 
-## 1. Workflow bắt buộc
+---
 
-### Bước 1 - Đọc context trước khi lập plan
+## Quy trình thực hiện (Workflow)
 
-Phải đọc và nắm các file:
+Với mỗi yêu cầu backend, Claude cần đi qua các bước sau theo thứ tự:
 
-- `ARCHITECTURE.md`
-- `PRODUCT.md`
-- `Api_References.md`
-- `Database.md`
-- `note.md`
-- `skill.md` (file này)
-- `Plan.md`
-- `Testing.md`
-- `Git.md`
+### Bước 1 — Phân tích & Lên kế hoạch
 
-### Bước 2 - Lập plan
+- Đọc kỹ yêu cầu, xác định: cần tạo/sửa file nào, tác động tới bảng DB nào
+- Nếu cần thay đổi file trong thư mục `Models/` (Entities) → **dừng lại, giải thích lý do và xin phép người dùng trước**
+- Viết plan ngắn gọn bằng Tiếng Việt trước khi sinh code
 
-- Tạo plan theo template `Plan.md`.
-- Nêu rõ: goal, success criteria, scope, steps, test strategy, risk/rollback.
-- Chưa được code ở bước này.
+### Bước 2 — Tạo Service
 
-### Bước 3 - Chờ user accept
+Tạo file `<FeatureName>Services.cs` theo cấu trúc:
 
-- Chỉ bắt đầu triển khai khi user phản hồi rõ ràng `accept`.
+```csharp
+// Interface và class nằm cùng 1 file, KHÔNG tạo file Interface riêng
+public interface I<FeatureName>Services
+{
+    // Chỉ expose các method được gọi từ Controller
+    Task<dynamic> GetListAsync(...);
+    Task<dynamic> CreateAsync(...);
+}
 
-### Bước 4 - Viết code
+public class <FeatureName>Services : I<FeatureName>Services
+{
+    private readonly AppDbContext _context;
+    // Inject thêm CommonServices nếu cần logic dùng chung
 
-- Code rõ ràng, dễ bảo trì, tách trách nhiệm.
-- Nếu sửa file global (ví dụ `Program.cs`, middleware, model schema) phải nêu rõ tác động trong plan.
-- Tuân thủ coding standards ở mục 2.
+    public <FeatureName>Services(AppDbContext context)
+    {
+        _context = context;
+    }
 
-### Bước 5 - Viết unit test
+    // === PUBLIC METHODS (expose qua Interface) ===
 
-- Bắt buộc thêm/cập nhật unit test cho mọi thay đổi logic.
-- Cover tối thiểu happy path + edge cases + negative/error cases.
-- Mock dependencies bên ngoài để test độc lập.
+    public async Task<dynamic> GetListAsync(...)
+    {
+        // Logic nghiệp vụ ở đây
+    }
 
-### Bước 6 - Chạy test
+    // === PRIVATE METHODS (nội bộ, không expose) ===
 
-- Chạy `dotnet test`.
-- Nếu fail: fix và test lại đến khi pass hoặc blocked có lý do rõ ràng.
-
-### Bước 7 - Git
-
-- Chỉ commit/push khi test pass.
-- Chỉ push sau khi user duyệt cuối.
-- Commit message theo chuẩn `feat|fix|refactor: ...`.
-
-## 2. Coding standards backend
-
-### Service
-
-- Interface và implementation có thể để cùng file theo convention dự án.
-- Method public cho Controller gọi phải rõ nghĩa.
-- Dùng `async/await` nhất quán.
-- Query đọc dữ liệu ưu tiên `.AsNoTracking()` khi phù hợp.
-
-### Controller
-
-- Controller chỉ orchestration, không chứa business logic nặng.
-- Validate input ở boundary phù hợp.
-- Response format theo contract của dự án.
-
-### Transaction
-
-- Khi thao tác nhiều bảng có phụ thuộc dữ liệu, dùng transaction phù hợp.
-- Cân nhắc isolation level cho nghiệp vụ nhạy cảm (số dư, tồn kho...).
-
-## 3. Chuẩn API response (tham chiếu)
-
-```json
-{ "code": 200, "message": "Thành công", "data": {} }
+    private async Task<bool> CheckExistsAsync(int id)
+    {
+        return await _context.TableName.AnyAsync(x => x.Id == id);
+    }
+}
 ```
 
-```json
-{ "code": 400, "message": "Lỗi nghiệp vụ" }
+**Checklist khi viết Service:**
+
+- [ ] Tất cả method dùng `async/await`
+- [ ] Ưu tiên trả về `dynamic` để dễ map với JSON cho client (trường hợp cần thiết mới dùng kiểu khác)
+- [ ] Query đọc dữ liệu có `.AsNoTracking()`
+- [ ] Kiểm tra tồn tại dùng `.AnyAsync()`, không dùng `.Count()` hay `.FirstOrDefault()`
+- [ ] `Select()` chỉ lấy đúng fields cần thiết
+- [ ] Logic phức tạp bọc trong `try...catch`
+- [ ] Chuỗi Insert/Update/Delete nhiều bảng phải dùng Transaction
+
+### Bước 3 — Tạo Controller
+
+Tạo file `<FeatureName>Controller.cs`:
+
+```csharp
+[ApiController]
+[Route("api/[controller]")]
+public class <FeatureName>Controller : ControllerBase
+{
+    private readonly I<FeatureName>Services _services;
+
+    public <FeatureName>Controller(I<FeatureName>Services services)
+    {
+        _services = services;
+    }
+
+    // Ưu tiên chỉ dùng [HttpGet] và [HttpPost]
+    [HttpPost("create")]
+    public async Task<dynamic> Create([FromBody] CreateRequest request)
+    {
+        return await _services.CreateAsync(request);
+    }
+}
 ```
 
+**Checklist khi viết Controller:**
+
+- [ ] Chỉ dùng `[HttpGet]` và `[HttpPost]`
+- [ ] Kiểu trả về là `dynamic`
+- [ ] Không đặt logic nghiệp vụ trong Controller, chỉ gọi Service
+
+### Bước 4 — Đăng ký Dependency Injection
+
+Thêm vào `Program.cs` (cẩn thận khi sửa file global này):
+
+```csharp
+builder.Services.AddScoped<I<FeatureName>Services, <FeatureName>Services>();
+```
+
+---
+
+## Chuẩn API Response
+
+Mọi API **bắt buộc** trả về đúng format này:
+
 ```json
+// Thành công
+{ "code": 200, "message": "Thêm mới thành công", "data": { ... } }
+
+// Lỗi nghiệp vụ
+{ "code": 400, "message": "Email đã tồn tại trong hệ thống" }
+
+// Không tìm thấy
 { "code": 404, "message": "Không tìm thấy dữ liệu" }
-```
 
-```json
+// Lỗi hệ thống
 { "code": 500, "message": "Đã xảy ra lỗi, vui lòng thử lại" }
 ```
 
-## 4. Unit test standards
+---
 
-- Đặt tên test theo format: `MethodName_ShouldExpectedResult_WhenCondition`.
-- Áp dụng AAA pattern (Arrange, Act, Assert).
-- Không gọi phụ thuộc ngoài thật trong unit test.
-- Test phải deterministic và chạy độc lập.
+## Patterns quan trọng
 
-## 5. Done checklist trước khi báo hoàn tất
+### Transaction (bắt buộc khi tác động nhiều bảng)
 
-- [ ] Plan đã được user accept.
-- [ ] Code đã hoàn tất đúng scope.
-- [ ] Unit test đã thêm/cập nhật.
-- [ ] `dotnet test` pass.
-- [ ] Đã báo user xin duyệt trước push.
+```csharp
+await using var transaction = await _context.Database.BeginTransactionAsync();
+try
+{
+    // Thực hiện các thao tác DB
+    await _context.SaveChangesAsync();
+    await transaction.CommitAsync();
+    return new { code = 200, message = "Thành công" };
+}
+catch (Exception ex)
+{
+    await transaction.RollbackAsync();
+    return new { code = 500, message = "Đã xảy ra lỗi: " + ex.Message };
+}
+```
+
+> [!NOTE]
+> Khi sử dụng `BeginTransactionAsync`, hãy cân nhắc cấu hình `IsolationLevel` (ví dụ: `IsolationLevel.Serializable`) nếu trong transaction có các tác vụ đọc dữ liệu quan trọng hoặc các nghiệp vụ cộng/trừ số dư, tồn kho... để tránh các vấn đề như **Dirty Read**, **Race Condition** và đảm bảo tính nhất quán tuyệt đối.
+
+### Validate DTO đầu vào
+
+> Nếu xử lý validate DTO đầu vào quá nhiều trường thì nên viết hàm riêng và hàm đó nằm trong class DTO luôn.
+
+```csharp
+public class CreateRequest
+{
+    public string Name { get; set; }
+    // ...nhiều trường khác
+
+    public string Validate()
+    {
+        if (string.IsNullOrEmpty(Name))
+            return "Tên không được để trống";
+        // ...các validation khác
+        return null; // Hợp lệ
+    }
+}
+```
+
+### Validation trước khi Insert
+
+```csharp
+// Kiểm tra trùng lặp (unique constraint)
+bool emailExists = await _context.Users
+    .AnyAsync(u => u.Email == request.Email);
+if (emailExists)
+    return new { code = 400, message = "Email đã tồn tại trong hệ thống" };
+```
+
+### Validation trước khi Update/Delete
+
+```csharp
+// Kiểm tra bản ghi tồn tại
+bool exists = await _context.Users.AnyAsync(u => u.Id == request.Id);
+if (!exists)
+    return new { code = 404, message = "Không tìm thấy người dùng" };
+```
+
+### Query tối ưu
+
+```csharp
+// ✅ Đúng: AsNoTracking + Select đúng fields
+var list = await _context.Users
+    .AsNoTracking()
+    .Where(u => u.IsActive)
+    .Select(u => new { u.Id, u.FullName, u.Email })
+    .ToListAsync();
+
+// ❌ Sai: Lấy cả bảng, có tracking
+var list = await _context.Users.ToListAsync();
+```
+
+### Logic dùng chung → CommonServices
+
+```csharp
+// Các helper dùng ở nhiều module đặt vào CommonServices
+public class CommonServices
+{
+    // Ví dụ: format ngày, sinh mã, kiểm tra quyền...
+    public string GenerateCode(string prefix) { ... }
+}
+```

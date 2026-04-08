@@ -1,13 +1,22 @@
 ### Bài học kinh nghiệm & Các lỗi cần tránh (Lessons Learned)
 
-# MẪU
-
 ## 1. Sai lầm về Logic Nghiệp vụ (Business Logic Issues)
 
-- **❌ Sai lầm thường gặp:** Cho phép xóa trực tiếp dữ liệu (hard-delete) khách hàng khỏi database khi có request.
-- **✅ Cách xử lý ĐÚNG:** Tại dự án này, luôn áp dụng Xóa mềm (soft-delete). Set cờ `IsDeleted = true`. Luôn filter `IsDeleted == false` ở mọi truy vấn GET.
+- **❌ Sai**: Hard-delete Patient → Mất lịch sử.
+  **✅ Đúng**: Soft-delete `IsDeleted = true`. Query luôn filter `!IsDeleted`.
+- **❌ Sai**: Book appointment không check doctor availability → Overbook.
+  **✅ Đúng**: Query overlap `WHERE doctorId = @id AND (start < @end AND end > @start)`.
 
 ## 2. Sai lầm về Thực tế Code / Convention
 
-- **❌ Sai lầm thường gặp:** Trả về lỗi chi tiết của Exception (stack trace) ra thẳng API response.
-- **✅ Cách xử lý ĐÚNG:** Bắt buộc bắt lỗi thông qua Global Exception Middleware và trả về object chuẩn `ApiResponse<T>` với ErrorCode cụ thể.
+- **❌ Sai**: Trả stack trace ra API.
+  **✅ Đúng**: Global Middleware → `{code:500, message:"Lỗi hệ thống"}`.
+- **❌ Sai**: `.ToList()` không AsNoTracking → Performance kém.
+  **✅ Đúng**: `.AsNoTracking().Select(fields needed)`.
+- **❌ Sai**: Không transaction cho multi-table update.
+  **✅ Đúng**: `BeginTransactionAsync()` + Commit/Rollback.
+
+## 3. EF Core Pitfalls
+
+- Unique constraint: Check `.AnyAsync()` trước Insert.
+- N+1 Query: Eager load `.Include()` hoặc projection `Select`.
